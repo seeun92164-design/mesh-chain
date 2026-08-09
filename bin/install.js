@@ -5,6 +5,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 
 const pkgRoot = path.join(__dirname, "..");
 const targetBase = process.argv[2] || process.cwd();
@@ -27,9 +28,36 @@ fs.writeFileSync(path.join(targetDir, ".gitignore"), "mesh_secrets.h\n");
 
 console.log(`mesh-chain installed to ${targetDir}`);
 console.log("");
+
+// PubSubClient is only used by whoever flashes role D, but installing it for
+// everyone avoids asking each teammate whether they need it.
+const LIBRARIES = ["Painless Mesh", "Async TCP", "PubSubClient"];
+
+let arduinoCliAvailable = true;
+try {
+  execSync("arduino-cli version", { stdio: "ignore" });
+} catch (e) {
+  arduinoCliAvailable = false;
+}
+
+if (arduinoCliAvailable) {
+  console.log("Installing Arduino libraries via arduino-cli...");
+  for (const lib of LIBRARIES) {
+    try {
+      execSync(`arduino-cli lib install "${lib}"`, { stdio: "inherit" });
+    } catch (e) {
+      console.log(`  WARNING: failed to install "${lib}" - install it manually (Library Manager or arduino-cli lib install).`);
+    }
+  }
+} else {
+  console.log("arduino-cli not found on PATH - skipping automatic library install.");
+  console.log("Install these manually (Arduino IDE Library Manager or arduino-cli):");
+  for (const lib of LIBRARIES) console.log(`  - ${lib}`);
+  console.log('NOTE: "Async TCP" must be the ESP32Async fork, not the older "AsyncTCP" by dvarrel.');
+}
+
+console.log("");
 console.log("Next steps:");
 console.log(`  cd "${targetDir}"`);
-console.log("  arduino-cli lib install \"Painless Mesh\" \"Async TCP\"");
-console.log("  # role D also needs: arduino-cli lib install PubSubClient");
-console.log("  #                    cp mesh_secrets.h.example mesh_secrets.h  (fill in values)");
+console.log("  # role D also needs: cp mesh_secrets.h.example mesh_secrets.h  (fill in values)");
 console.log("  # set #define MY_ROLE to 'A' / 'B' / 'C' / 'D' in MeshChain.ino, then compile+upload");
