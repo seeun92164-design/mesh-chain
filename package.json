@@ -1,0 +1,17 @@
+{
+  "name": "mesh-chain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Installer for team grounding's painlessMesh A-B-C-D relay demo (board firmware + dashboard)",
+  "bin": {
+    "install-mesh-chain": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "README.md",
+    "MeshChain.ino",
+    "mesh-dashboard.html",
+    "mesh_secrets.h.example",
+    ".gitignore"
+  ]
+}
